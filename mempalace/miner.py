@@ -247,6 +247,9 @@ def process_file(
         return 0
 
     try:
+        # Skip files larger than 10MB to avoid unbounded memory allocation
+        if filepath.stat().st_size > 10 * 1024 * 1024:
+            return 0
         content = filepath.read_text(encoding="utf-8", errors="replace")
     except Exception:
         return 0

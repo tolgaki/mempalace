@@ -24,9 +24,18 @@ def normalize(filepath: str) -> str:
     Load a file and normalize to transcript format if it's a chat export.
     Plain text files pass through unchanged.
     """
+    import os
+
     try:
+        # Guard against excessively large files (50MB limit)
+        file_size = os.path.getsize(filepath)
+        if file_size > 50 * 1024 * 1024:
+            raise IOError(f"File too large ({file_size} bytes, max 50MB): {filepath}")
+
         with open(filepath, "r", encoding="utf-8", errors="replace") as f:
             content = f.read()
+    except IOError:
+        raise
     except Exception as e:
         raise IOError(f"Could not read {filepath}: {e}")
 

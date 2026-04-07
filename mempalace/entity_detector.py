@@ -454,7 +454,8 @@ def extract_candidates(text: str) -> dict:
             counts[word] += 1
 
     # Also find multi-word proper nouns (e.g. "Memory Palace", "Claude Code")
-    multi = re.findall(r"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b", text)
+    # Use possessive-style match: limit to max 5 words to prevent ReDoS
+    multi = re.findall(r"\b([A-Z][a-z]+(?: [A-Z][a-z]+){1,4})\b", text)
     for phrase in multi:
         if not any(w.lower() in STOPWORDS for w in phrase.split()):
             counts[phrase] += 1

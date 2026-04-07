@@ -55,8 +55,12 @@ class Layer0:
             return self._text
 
         if os.path.exists(self.path):
-            with open(self.path, "r") as f:
-                self._text = f.read().strip()
+            # Identity files should be small; cap at 1MB
+            if os.path.getsize(self.path) > 1024 * 1024:
+                self._text = "## L0 — IDENTITY\nIdentity file too large (>1MB)"
+            else:
+                with open(self.path, "r") as f:
+                    self._text = f.read().strip()
         else:
             self._text = (
                 "## L0 — IDENTITY\nNo identity configured. Create ~/.mempalace/identity.txt"
@@ -97,7 +101,7 @@ class Layer1:
             return "## L1 — No palace found. Run: mempalace mine <dir>"
 
         # Fetch all drawers (with optional wing filter)
-        kwargs = {"include": ["documents", "metadatas"]}
+        kwargs = {"include": ["documents", "metadatas"], "limit": 5000}
         if self.wing:
             kwargs["where"] = {"wing": self.wing}
 

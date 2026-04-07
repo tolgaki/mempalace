@@ -312,7 +312,9 @@ def _generate_aaak_bootstrap(
         ]
     )
 
-    (mempalace_dir / "aaak_entities.md").write_text("\n".join(registry_lines))
+    entities_path = mempalace_dir / "aaak_entities.md"
+    entities_path.write_text("\n".join(registry_lines))
+    entities_path.chmod(0o600)  # Restrict access — contains personal data
 
     # Critical facts bootstrap (pre-palace — before any mining)
     facts_lines = [
@@ -359,7 +361,9 @@ def _generate_aaak_bootstrap(
         ]
     )
 
-    (mempalace_dir / "critical_facts.md").write_text("\n".join(facts_lines))
+    facts_path = mempalace_dir / "critical_facts.md"
+    facts_path.write_text("\n".join(facts_lines))
+    facts_path.chmod(0o600)  # Restrict access — contains personal data
 
 
 def run_onboarding(

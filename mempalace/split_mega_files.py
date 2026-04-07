@@ -167,6 +167,10 @@ def split_file(filepath, output_dir, dry_run=False):
     Returns list of output paths written (or would be written if dry_run).
     """
     path = Path(filepath)
+    # Guard against extremely large files (500MB)
+    file_size = path.stat().st_size
+    if file_size > 500 * 1024 * 1024:
+        raise IOError(f"File too large for splitting ({file_size} bytes): {filepath}")
     lines = path.read_text(errors="replace").splitlines(keepends=True)
 
     boundaries = find_session_boundaries(lines)
