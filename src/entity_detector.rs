@@ -835,10 +835,16 @@ pub fn detect_entities(file_paths: &[PathBuf], max_files: usize) -> DetectedEnti
     let mut combined = String::new();
 
     for path in file_paths.iter().take(max_files) {
-        if let Ok(content) = std::fs::read_to_string(path) {
-            let chunk: String = content.chars().take(5120).collect();
-            combined.push_str(&chunk);
-            combined.push('\n');
+        // Read only the first 6KB to avoid unbounded memory allocation on large files
+        use std::io::Read;
+        let mut buf = vec![0u8; 6144];
+        if let Ok(mut file) = std::fs::File::open(path) {
+            if let Ok(n) = file.read(&mut buf) {
+                let text = String::from_utf8_lossy(&buf[..n]);
+                let chunk: String = text.chars().take(5120).collect();
+                combined.push_str(&chunk);
+                combined.push('\n');
+            }
         }
     }
 

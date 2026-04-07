@@ -212,6 +212,15 @@ pub fn split_file(
     output_dir: Option<&Path>,
     dry_run: bool,
 ) -> Result<Vec<PathBuf>> {
+    // Guard against extremely large files (>500MB)
+    let file_meta = std::fs::metadata(filepath)?;
+    if file_meta.len() > 500 * 1024 * 1024 {
+        return Err(crate::error::MempalaceError::Parse(format!(
+            "File too large for splitting ({} bytes): {}",
+            file_meta.len(),
+            filepath.display()
+        )));
+    }
     let content = std::fs::read_to_string(filepath)?;
     let lines_owned: Vec<String> = content.lines().map(String::from).collect();
     let lines: Vec<&str> = lines_owned.iter().map(|s| s.as_str()).collect();

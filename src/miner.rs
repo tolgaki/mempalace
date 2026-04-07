@@ -441,6 +441,13 @@ pub fn mine(
             }
         }
 
+        // Skip files larger than 10MB to avoid unbounded memory allocation
+        if let Ok(meta) = std::fs::metadata(filepath) {
+            if meta.len() > 10 * 1024 * 1024 {
+                continue;
+            }
+        }
+
         let content = match std::fs::read_to_string(filepath) {
             Ok(c) => c,
             Err(_) => continue,

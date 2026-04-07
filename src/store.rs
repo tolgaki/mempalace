@@ -304,10 +304,17 @@ impl PalaceStore {
                 "json_extract(metadata, '$.source_file') = ?".to_string(),
                 vec![s.clone()],
             ),
-            WhereFilter::Custom(key, val) => (
-                format!("json_extract(metadata, '$.{}') = ?", key),
-                vec![val.clone()],
-            ),
+            WhereFilter::Custom(key, val) => {
+                // Sanitize key to prevent SQL injection — only allow alphanumeric + underscores
+                let safe_key: String = key
+                    .chars()
+                    .filter(|c| c.is_alphanumeric() || *c == '_')
+                    .collect();
+                (
+                    format!("json_extract(metadata, '$.{}') = ?", safe_key),
+                    vec![val.clone()],
+                )
+            }
         }
     }
 
@@ -332,10 +339,16 @@ impl PalaceStore {
                 format!("json_extract({}.metadata, '$.source_file') = ?", prefix),
                 vec![s.clone()],
             ),
-            WhereFilter::Custom(key, val) => (
-                format!("json_extract({}.metadata, '$.{}') = ?", prefix, key),
-                vec![val.clone()],
-            ),
+            WhereFilter::Custom(key, val) => {
+                let safe_key: String = key
+                    .chars()
+                    .filter(|c| c.is_alphanumeric() || *c == '_')
+                    .collect();
+                (
+                    format!("json_extract({}.metadata, '$.{}') = ?", prefix, safe_key),
+                    vec![val.clone()],
+                )
+            }
         }
     }
 }

@@ -16,7 +16,26 @@ use std::path::Path;
 
 /// Load a file and normalize to transcript format if it's a chat export.
 /// Plain text files pass through unchanged.
+/// Maximum file size for normalization (50MB)
+const MAX_NORMALIZE_SIZE: u64 = 50 * 1024 * 1024;
+
 pub fn normalize(filepath: &str) -> Result<String> {
+    // Check file size before reading to prevent unbounded memory allocation
+    let metadata = std::fs::metadata(filepath).map_err(|e| {
+        MempalaceError::Io(std::io::Error::new(
+            e.kind(),
+            format!("Could not stat {}: {}", filepath, e),
+        ))
+    })?;
+    if metadata.len() > MAX_NORMALIZE_SIZE {
+        return Err(MempalaceError::Parse(format!(
+            "File too large ({} bytes, max {}): {}",
+            metadata.len(),
+            MAX_NORMALIZE_SIZE,
+            filepath
+        )));
+    }
+
     let content = std::fs::read_to_string(filepath).map_err(|e| {
         MempalaceError::Io(std::io::Error::new(
             e.kind(),
